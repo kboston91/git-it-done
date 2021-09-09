@@ -3,7 +3,25 @@ var nameInputEl = document.querySelector('#username');
 var repoContainerEl = document.querySelector("#repos-container");
 var repoSearchTerm = document.querySelector("#repo-search-term");
 
-var getUserRepos = function (user) {
+var formSubmitHandler = function(event) {
+  // prevent page from refreshing
+  event.preventDefault();
+  
+  // get value from input element
+  var username = nameInputEl.value.trim();
+
+  if (username) {
+    getUserRepos(username);
+    
+    // clear old content
+    repoContainerEl.textContent = '';
+    nameInputEl.value = "";
+  } else {
+    alert("Please enter a GitHub username");
+  }
+};
+
+var getUserRepos = function(user) {
   // format the github api url
   var apiUrl = "https://api.github.com/users/" + user + "/repos";
 
@@ -12,7 +30,9 @@ var getUserRepos = function (user) {
     .then(function(response) {
       // request was successful
       if (response.ok) {
+        console.log(response);
         response.json().then(function(data) {
+          console.log(data);
           displayRepos(data, user);
         });
       } else {
@@ -20,22 +40,8 @@ var getUserRepos = function (user) {
       }
     })
   .catch(function(error) {
-    // Notice this `.catch()` getting chained onto the end of the `.then()` method
     alert("Unable to connect to GitHub");
   });
-}
-var formSubmitHandler = function(event) {
-  event.preventDefault();
-  // get value from input element
-  var username = nameInputEl.value.trim();
-
-  if (username) {
-    getUserRepos(username);
-    nameInputEl.value = "";
-  } else {
-    alert("Please enter a GitHub username");
-  }
-  console.log(event);
 };
 
 var displayRepos = function(repos, searchTerm) {
@@ -44,11 +50,8 @@ if (repos.length === 0) {
   repoContainerEl.textContent = "No repositories found.";
   return;
 }
-  // clear old content
-  repoContainerEl.textContent = "";
+
   repoSearchTerm.textContent = searchTerm;
-  console.log(repos);
-  console.log(searchTerm);
 
   // loop over repos
   for (var i = 0; i < repos.length; i++) {
@@ -78,15 +81,13 @@ if (repos.length === 0) {
       statusEl.innerHTML = "<i class='fas fa-check-square status-icon icon-success'></i>";
     }
 
-// append to container
-repoEl.appendChild(statusEl);
+    // append to container
+    repoEl.appendChild(statusEl);
 
     // append container to the dom
     repoContainerEl.appendChild(repoEl);
   }
 };
 
-var userFormEl = document.querySelector('#user-form');
-var nameInputEl = document.querySelector('#username');
-
+// add event listeners to forms
 userFormEl.addEventListener('submit', formSubmitHandler);
